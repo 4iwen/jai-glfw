@@ -1,6 +1,15 @@
-// Auto-generated bindings by build.jai for GLFW 3.4.0
+//
+// This file was auto-generated using the following command:
+//
+// jai build.jai
+//
+id :: *void;
+CGDirectDisplayID :: u32;
+
+
 
 GLFW_INCLUDE_NONE :: 1;
+GLFW_EXPOSE_NATIVE_COCOA :: 1;
 GLFW_VERSION_MAJOR :: 3;
 
 GLFW_VERSION_MINOR :: 4;
@@ -5391,6 +5400,57 @@ glfwVulkanSupported :: () -> s32 #foreign glfw;
 *  @ingroup vulkan
 */
 glfwGetRequiredInstanceExtensions :: (count: *u32) -> **u8 #foreign glfw;
+
+/*! @brief Returns the `CGDirectDisplayID` of the specified monitor.
+*
+*  @return The `CGDirectDisplayID` of the specified monitor, or
+*  `kCGNullDirectDisplay` if an [error](@ref error_handling) occurred.
+*
+*  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
+*  GLFW_PLATFORM_UNAVAILABLE.
+*
+*  @thread_safety This function may be called from any thread.  Access is not
+*  synchronized.
+*
+*  @since Added in version 3.1.
+*
+*  @ingroup native
+*/
+glfwGetCocoaMonitor :: (monitor: *GLFWmonitor) -> CGDirectDisplayID #foreign glfw;
+
+/*! @brief Returns the `NSWindow` of the specified window.
+*
+*  @return The `NSWindow` of the specified window, or `nil` if an
+*  [error](@ref error_handling) occurred.
+*
+*  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
+*  GLFW_PLATFORM_UNAVAILABLE.
+*
+*  @thread_safety This function may be called from any thread.  Access is not
+*  synchronized.
+*
+*  @since Added in version 3.0.
+*
+*  @ingroup native
+*/
+glfwGetCocoaWindow :: (window: *GLFWwindow) -> id #foreign glfw;
+
+/*! @brief Returns the `NSView` of the specified window.
+*
+*  @return The `NSView` of the specified window, or `nil` if an
+*  [error](@ref error_handling) occurred.
+*
+*  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
+*  GLFW_PLATFORM_UNAVAILABLE.
+*
+*  @thread_safety This function may be called from any thread.  Access is not
+*  synchronized.
+*
+*  @since Added in version 3.4.
+*
+*  @ingroup native
+*/
+glfwGetCocoaView :: (window: *GLFWwindow) -> id #foreign glfw;
 
 #scope_file
 

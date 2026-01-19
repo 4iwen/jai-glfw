@@ -170,8 +170,19 @@ compile_libraries :: (options: Options) -> success := false, error := "" {
         generate_compile_time_struct_checks = false;
 
         array_add(*extra_clang_arguments, "-DGLFW_INCLUDE_NONE");
+        #if OS == .MACOS {
+            array_add(*extra_clang_arguments, "-DGLFW_EXPOSE_NATIVE_COCOA");
+            sdk_path := get_macos_sdk_path();
+            if sdk_path {
+                array_add(*extra_clang_arguments, "-isysroot", sdk_path);
+            }
+            header = "id :: *void;\nCGDirectDisplayID :: u32;\n";
+        }
 
         array_add(*source_files, tprint("%/include/GLFW/glfw3.h", source_dir));
+        #if OS == .MACOS {
+            array_add(*source_files, tprint("%/include/GLFW/glfw3native.h", source_dir));
+        }
     }
 
     if !generate_bindings(bindings_options, tprint("%/bindings.jai", output_dir))
@@ -260,3 +271,19 @@ recreate_directory :: (name: string) -> bool {
 
 #import "File_Utilities";
 #import "Bindings_Generator";
+
+#import "String";
+
+get_macos_sdk_path :: () -> string {
+    result, output, error := run_command(
+        "xcrun",
+        "--show-sdk-path",
+        capture_and_return_output = true
+    );
+    if result.exit_code != 0 {
+        print("Error: Could not determine macOS SDK path. xcrun failed.\n");
+        return "";
+    }
+    return trim(output);
+}
+
