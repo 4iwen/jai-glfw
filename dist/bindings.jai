@@ -1,15 +1,13 @@
 //
 // This file was auto-generated using the following command:
 //
-// jai build.jai
+// jai ./modules/glfw/build.jai
 //
-id :: *void;
-CGDirectDisplayID :: u32;
 
 
 
 GLFW_INCLUDE_NONE :: 1;
-GLFW_EXPOSE_NATIVE_COCOA :: 1;
+GLFW_EXPOSE_NATIVE_WIN32 :: 1;
 GLFW_VERSION_MAJOR :: 3;
 
 GLFW_VERSION_MINOR :: 4;
@@ -5401,10 +5399,11 @@ glfwVulkanSupported :: () -> s32 #foreign glfw;
 */
 glfwGetRequiredInstanceExtensions :: (count: *u32) -> **u8 #foreign glfw;
 
-/*! @brief Returns the `CGDirectDisplayID` of the specified monitor.
+/*! @brief Returns the adapter device name of the specified monitor.
 *
-*  @return The `CGDirectDisplayID` of the specified monitor, or
-*  `kCGNullDirectDisplay` if an [error](@ref error_handling) occurred.
+*  @return The UTF-8 encoded adapter device name (for example `\\.\DISPLAY1`)
+*  of the specified monitor, or `NULL` if an [error](@ref error_handling)
+*  occurred.
 *
 *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
 *  GLFW_PLATFORM_UNAVAILABLE.
@@ -5416,15 +5415,41 @@ glfwGetRequiredInstanceExtensions :: (count: *u32) -> **u8 #foreign glfw;
 *
 *  @ingroup native
 */
-glfwGetCocoaMonitor :: (monitor: *GLFWmonitor) -> CGDirectDisplayID #foreign glfw;
+glfwGetWin32Adapter :: (monitor: *GLFWmonitor) -> *u8 #foreign glfw;
 
-/*! @brief Returns the `NSWindow` of the specified window.
+/*! @brief Returns the display device name of the specified monitor.
 *
-*  @return The `NSWindow` of the specified window, or `nil` if an
+*  @return The UTF-8 encoded display device name (for example
+*  `\\.\DISPLAY1\Monitor0`) of the specified monitor, or `NULL` if an
 *  [error](@ref error_handling) occurred.
 *
 *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
 *  GLFW_PLATFORM_UNAVAILABLE.
+*
+*  @thread_safety This function may be called from any thread.  Access is not
+*  synchronized.
+*
+*  @since Added in version 3.1.
+*
+*  @ingroup native
+*/
+glfwGetWin32Monitor :: (monitor: *GLFWmonitor) -> *u8 #foreign glfw;
+
+/*! @brief Returns the `HWND` of the specified window.
+*
+*  @return The `HWND` of the specified window, or `NULL` if an
+*  [error](@ref error_handling) occurred.
+*
+*  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
+*  GLFW_PLATFORM_UNAVAILABLE.
+*
+*  @remark The `HDC` associated with the window can be queried with the
+*  [GetDC](https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdc)
+*  function.
+*  @code
+*  HDC dc = GetDC(glfwGetWin32Window(window));
+*  @endcode
+*  This DC is private and does not need to be released.
 *
 *  @thread_safety This function may be called from any thread.  Access is not
 *  synchronized.
@@ -5433,24 +5458,7 @@ glfwGetCocoaMonitor :: (monitor: *GLFWmonitor) -> CGDirectDisplayID #foreign glf
 *
 *  @ingroup native
 */
-glfwGetCocoaWindow :: (window: *GLFWwindow) -> id #foreign glfw;
-
-/*! @brief Returns the `NSView` of the specified window.
-*
-*  @return The `NSView` of the specified window, or `nil` if an
-*  [error](@ref error_handling) occurred.
-*
-*  @errors Possible errors include @ref GLFW_NOT_INITIALIZED and @ref
-*  GLFW_PLATFORM_UNAVAILABLE.
-*
-*  @thread_safety This function may be called from any thread.  Access is not
-*  synchronized.
-*
-*  @since Added in version 3.4.
-*
-*  @ingroup native
-*/
-glfwGetCocoaView :: (window: *GLFWwindow) -> id #foreign glfw;
+glfwGetWin32Window :: (window: *GLFWwindow) -> HWND #foreign glfw;
 
 #scope_file
 
@@ -5466,4 +5474,8 @@ glfwGetCocoaView :: (window: *GLFWwindow) -> id #foreign glfw;
     #if OS == .LINUX    && CPU == .ARM64    glfw :: #library "linux/arm64/libglfw";
     #if OS == .WINDOWS  && CPU == .X64      glfw :: #library "windows/x64/glfw3";
     #if OS == .WINDOWS  && CPU == .ARM64    glfw :: #library "windows/arm64/glfw3";
+}
+
+#if OS == .WINDOWS {
+    #import "Windows";
 }

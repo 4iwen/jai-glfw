@@ -178,9 +178,12 @@ compile_libraries :: (options: Options) -> success := false, error := "" {
             }
             header = "id :: *void;\nCGDirectDisplayID :: u32;\n";
         }
+        #if OS == .WINDOWS {
+            array_add(*extra_clang_arguments, "-DGLFW_EXPOSE_NATIVE_WIN32");
+        }
 
         array_add(*source_files, tprint("%/include/GLFW/glfw3.h", source_dir));
-        #if OS == .MACOS {
+        #if OS == .MACOS || OS == .WINDOWS {
             array_add(*source_files, tprint("%/include/GLFW/glfw3native.h", source_dir));
         }
     }
@@ -204,6 +207,10 @@ BINDINGS_FOOTER :: #string END
     #if OS == .LINUX    && CPU == .ARM64    glfw :: #library "linux/arm64/libglfw";
     #if OS == .WINDOWS  && CPU == .X64      glfw :: #library "windows/x64/glfw3";
     #if OS == .WINDOWS  && CPU == .ARM64    glfw :: #library "windows/arm64/glfw3";
+}
+
+#if OS == .WINDOWS {
+    #import "Windows"; // for HWND
 }
 END
 
