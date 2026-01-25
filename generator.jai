@@ -18,6 +18,8 @@ Options :: struct {
     source_version_patch := 0;
 
     max_parallel_jobs := 0;
+
+
 }
 
 generate :: (options: Options) -> success := false, error := "" {
@@ -154,18 +156,38 @@ compile_libraries :: (options: Options) -> success := false, error := "" {
     }
 
     bindings_options: Generate_Bindings_Options;
+    output_filename: string;
     {
         using bindings_options;
 
         #if OS == .WINDOWS {
+            #if CPU == .X64     array_add(*library_search_paths, "x64");
+            #if CPU == .ARM64   array_add(*library_search_paths, "arm64");
+            
+            output_filename = tprint("%/windows/windows.jai", output_dir);
+            make_directory_if_it_does_not_exist(tprint("%/windows", output_dir));
+
+            footer = BINDINGS_FOOTER_WINDOWS;
             array_add(*libraries, .{filename="glfw3", identifier="glfw"});
-        } else #if OS == .LINUX || OS == .MACOS {
+        } else #if OS == .MACOS {
+            output_filename = tprint("%/macos/macos.jai", output_dir);
+            make_directory_if_it_does_not_exist(tprint("%/macos", output_dir));
+            
+            footer = BINDINGS_FOOTER_MACOS;
+            array_add(*libraries, .{filename="libglfw", identifier="glfw"});
+            array_add(*library_search_paths, libs_output_dir);
+        } else #if OS == .LINUX {
+            #if CPU == .X64     array_add(*library_search_paths, "x64");
+            #if CPU == .ARM64   array_add(*library_search_paths, "arm64");
+            
+            output_filename = tprint("%/linux/linux.jai", output_dir);
+            make_directory_if_it_does_not_exist(tprint("%/linux", output_dir));
+
+            footer = BINDINGS_FOOTER_LINUX;
             array_add(*libraries, .{filename="libglfw", identifier="glfw"});
         }
 
-        array_add(*library_search_paths, libs_output_dir);
-
-        footer = BINDINGS_FOOTER;
+        
         generate_library_declarations = false;
         generate_compile_time_struct_checks = false;
 
@@ -188,29 +210,40 @@ compile_libraries :: (options: Options) -> success := false, error := "" {
         }
     }
 
-    if !generate_bindings(bindings_options, tprint("%/bindings.jai", output_dir))
+    if !generate_bindings(bindings_options, output_filename)
         return error = "Could not generate bindings";
 
     return true;
 }
 
-BINDINGS_FOOTER :: #string END
+BINDINGS_FOOTER_WINDOWS :: #string END
 #if GLFW_USE_STATIC_LIB {
-    #if OS == .MACOS                        glfw :: #library,no_dll "macos/libglfw3";
-    #if OS == .LINUX    && CPU == .X64      glfw :: #library,no_dll "linux/x64/libglfw3";
-    #if OS == .LINUX    && CPU == .ARM64    glfw :: #library,no_dll "linux/arm64/libglfw3";
-    #if OS == .WINDOWS  && CPU == .X64      glfw :: #library,no_dll "windows/x64/glfw3_static";
-    #if OS == .WINDOWS  && CPU == .ARM64    glfw :: #library,no_dll "windows/arm64/glfw3_static";
+    #if CPU == .X64      glfw :: #library,no_dll "x64/glfw3_static";
+    #if CPU == .ARM64    glfw :: #library,no_dll "arm64/glfw3_static";
 } else {
-    #if OS == .MACOS                        glfw :: #library "macos/libglfw";
-    #if OS == .LINUX    && CPU == .X64      glfw :: #library "linux/x64/libglfw";
-    #if OS == .LINUX    && CPU == .ARM64    glfw :: #library "linux/arm64/libglfw";
-    #if OS == .WINDOWS  && CPU == .X64      glfw :: #library "windows/x64/glfw3";
-    #if OS == .WINDOWS  && CPU == .ARM64    glfw :: #library "windows/arm64/glfw3";
+    #if CPU == .X64      glfw :: #library "x64/glfw3";
+    #if CPU == .ARM64    glfw :: #library "arm64/glfw3";
 }
 
-#if OS == .WINDOWS {
-    #import "Windows"; // for HWND
+#scope_file
+#import "Windows"; // for HWND
+END
+
+BINDINGS_FOOTER_MACOS :: #string END
+#if GLFW_USE_STATIC_LIB {
+    glfw :: #library,no_dll "libglfw3";
+} else {
+    glfw :: #library "libglfw";
+}
+END
+
+BINDINGS_FOOTER_LINUX :: #string END
+#if GLFW_USE_STATIC_LIB {
+    #if CPU == .X64      glfw :: #library,no_dll "x64/libglfw3";
+    #if CPU == .ARM64    glfw :: #library,no_dll "arm64/libglfw3";
+} else {
+    #if CPU == .X64      glfw :: #library "x64/libglfw";
+    #if CPU == .ARM64    glfw :: #library "arm64/libglfw";
 }
 END
 

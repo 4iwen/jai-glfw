@@ -12,4 +12,12 @@
 
 GLFW_USE_STATIC_LIB :: USE_STATIC_LIB;
 
-#load "dist/bindings.jai";
+#if OS == .WINDOWS {
+    #load "dist/windows/windows.jai";
+} else #if OS == .MACOS {
+    #load "dist/macos/macos.jai";
+} else #if OS == .LINUX {
+    #load "dist/linux/linux.jai";
+} else {
+    #assert false "OS not supported";
+}
